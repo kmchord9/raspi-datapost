@@ -5,7 +5,7 @@ from time import sleep
 from sensor_module.BME280 import *
 from key import *
 
-url = "http://kmhome.local:3000/api/logs/"
+url = "http://192.168.1.27:3000/api/logs/"
 method = "POST"
 headers = {"Content-Type": "application/json", }
 
@@ -32,5 +32,5 @@ while True:
     with urllib.request.urlopen(request) as response:
         response_body = response.read().decode("utf-8")
 
-    sleep(10)
+    sleep(2)
 
