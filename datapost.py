@@ -5,7 +5,7 @@ from time import sleep
 from sensor_module.BME280 import *
 from key import *
 
-url = "http://192.168.1.27:3000/api/logs/"
+url = "http://192.168.1.27:3001/api/logs/"
 method = "POST"
 headers = {"Content-Type": "application/json", }
 
@@ -17,9 +17,16 @@ while True:
 
     temperature = data['temp']
     humidity = data['Hum']
+    pressure = data['press']
 
     # PythonオブジェクトをJSONに変換する
-    obj = {"temperature": temperature, "humidity": humidity, }
+    obj = {
+            "temperature": temperature, 
+            "humidity": humidity, 
+            "pressure": pressure,
+            "device":'BME280',
+            "place":'home'
+          }
     json_data = json.dumps(obj).encode("utf-8")
 
     credentials = ('%s:%s' % (user, password))
