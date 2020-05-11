@@ -58,7 +58,7 @@ def get_calib_param():
 		if digH[i] & 0x8000:
 			digH[i] = (-digH[i] ^ 0xFFFF) + 1  
 
-def readData():
+def BME280readData():
 	data = []
 	for i in range (0xF7, 0xF7+8):
 		data.append(bus.read_byte_data(i2c_address,i))
