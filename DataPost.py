@@ -9,9 +9,8 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 class Sensor(metaclass = ABCMeta):
-  def __init__(self, url, device, place):
+  def __init__(self, url, place):
     self.url = url
-    self.device = device
     self.place = place
     self.user = USER
     self.password = PASSWORD
@@ -41,21 +40,20 @@ class Sensor(metaclass = ABCMeta):
         "device": self.device,
         "place": self.place
       })
-  def convertToKey(obj):
-    for key, value in zip(obj.items(),self.RELATE.keys()):
-      if key 
-
-
+  def convertToKey(self,objs):
+    for obj in objs:
+      for key, value in obj.items():
+        if key in self.RELATE:
+          obj[key]=self.RELATE[key][value]
+    return objs
 
   def post(self, objs=None):
     if objs==None:
       objs = self.postdata
-    print(objs)
     method = "POST"
     headers = {"Content-Type": "application/json", }
 
     for obj in objs:
-      print(obj)
       # PythonオブジェクトをJSONに変換する
       json_data = json.dumps(obj).encode("utf-8")
 
@@ -68,13 +66,13 @@ class Sensor(metaclass = ABCMeta):
 
       with urllib.request.urlopen(request) as response:
           response_body = response.read().decode("utf-8")
-      sleep(2)
 
 
 class ADT7410(Sensor):
-  def __init__(self, url, device, place):
-    super().__init__(url, device, place)
+  def __init__(self, url, place):
+    super().__init__(url, place)
     self.physics_list = ["温度"]
+    self.device = 'ADT7410'
 
   def getData(self):
     rowdata = get_adt7410_data()
@@ -84,9 +82,10 @@ class ADT7410(Sensor):
     return {key: value}
 
 class BME280(Sensor):
-  def __init__(self, url, device, place):
-    super().__init__(url, device, place)
+  def __init__(self, url, place):
+    super().__init__(url, place)
     self.physics_list = ["温度", "気圧", "湿度"]
+    self.device = 'BME280'
 
   def getData(self):
     rowdata = BME280readData()
@@ -94,9 +93,18 @@ class BME280(Sensor):
 
 
 if __name__ == '__main__':
-  a = BME280("http://172.22.1.37:3001/api/logs/", "BME280","E305")
-  d = a.getData()
-  a.setData(d)
-  a.post()
+  URL = "http://172.22.1.37:3001/api/logs/"
+
+  sensors = [
+       BME280(URL,"E305"),
+       ADT7410(URL,"E305-1"),
+      ]
+  while True:
+    for sensor in sensors:
+      data = sensor.getData()
+      sensor.setData(data)
+      sensor.convertToKey(sensor.postdata)
+      sensor.post()
+    sleep(10)
 
 
