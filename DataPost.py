@@ -7,6 +7,7 @@ import urllib.request
 from time import sleep
 from abc import ABCMeta
 from abc import abstractmethod
+import ast
 
 class Sensor(metaclass = ABCMeta):
   def __init__(self, url, place):
@@ -16,11 +17,12 @@ class Sensor(metaclass = ABCMeta):
     self.password = PASSWORD
     self.physics_list = []
     self.postdata = []
-    self.RELATE = {
+    self.RELATESS = {
           "physics":{ "温度":1, "湿度":2, "気圧":3 },
           "device": { "BME280":1, "ADT7410":2 },
-          "place": { "E305":1 },
+          "place": { "部屋001":1,"部屋002":2 },
          }
+    self.RELATE = self.get_init_data()
 
   @abstractmethod
   def getData(self):
@@ -33,6 +35,7 @@ class Sensor(metaclass = ABCMeta):
     ex value = {"気温":23, "湿度":60, "気圧":1000}
     　配列のキーはphysics_listと一致させること
     '''
+    self.postdata=[]
     for physics in self.physics_list:    
       self.postdata.append({
         "value": value[physics],
@@ -47,13 +50,14 @@ class Sensor(metaclass = ABCMeta):
           obj[key]=self.RELATE[key][value]
     return objs
 
-  def post(self, objs=None):
+  def post(self, objs=None, url='api/logs/'):
     if objs==None:
       objs = self.postdata
     method = "POST"
     headers = {"Content-Type": "application/json", }
 
     for obj in objs:
+      URL = self.url + url
       # PythonオブジェクトをJSONに変換する
       json_data = json.dumps(obj).encode("utf-8")
 
@@ -61,12 +65,31 @@ class Sensor(metaclass = ABCMeta):
       encoded_credentials = base64.b64encode(credentials.encode('ascii'))
 
       # httpリクエストを準備してPOST
-      request = urllib.request.Request(self.url, data=json_data, method=method, headers=headers)
+      request = urllib.request.Request(URL, data=json_data, method=method, headers=headers)
       request.add_header('Authorization', 'Basic %s' % encoded_credentials.decode("ascii"))
 
       with urllib.request.urlopen(request) as response:
           response_body = response.read().decode("utf-8")
+          print(response_body)
 
+  def get_init_data(self):
+    URL = self.url + '/api/users/'
+
+    credentials = ('%s:%s' % (self.user, self.password))
+    encoded_credentials = base64.b64encode(credentials.encode('ascii'))
+    headers = {"Content-Type": "application/json", }
+
+    request = urllib.request.Request(URL, headers=headers)
+    request.add_header('Authorization', 'Basic %s' % encoded_credentials.decode("ascii"))
+
+    with urllib.request.urlopen(request) as response:
+      response_body = response.read().decode("utf-8")
+    data = ast.literal_eval(response_body)
+    
+    if self.place not in list(data['place'].keys()):
+      self.post([{"place":self.place}], '/api/place/')
+ 
+    return data
 
 class ADT7410(Sensor):
   def __init__(self, url, place):
@@ -92,12 +115,12 @@ class BME280(Sensor):
     return {key: value for (key, value) in zip(self.physics_list, rowdata.values())}
 
 
-if __name__ == '__main__':
-  URL = "http://172.22.1.37:3001/api/logs/"
+#if __name__ == '__main__':
+  URL = "http://172.22.1.37:3001"
 
   sensors = [
-       BME280(URL,"E305"),
-       ADT7410(URL,"E305-1"),
+       #BME280(URL,"部屋005"),
+       ADT7410(URL,"部屋005"),
       ]
   while True:
     for sensor in sensors:
@@ -105,6 +128,18 @@ if __name__ == '__main__':
       sensor.setData(data)
       sensor.convertToKey(sensor.postdata)
       sensor.post()
-    sleep(10)
+
+      sleep(10)
+
+#URL = "http://172.22.1.37:3001"
+#sensor = BME280(URL,"部屋005")
+
+#data = sensor.getData()
+#sensor.setData(data)
+#print('部屋003' not in list(sensor.RELATE['place'].keys()))
+#sensor.convertToKey(sensor.postdata)
+#sensor.post()
+
+
 
 
