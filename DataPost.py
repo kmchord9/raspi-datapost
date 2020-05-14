@@ -127,7 +127,7 @@ class MAX31855(Sensor):
   def __init__(self, url, place):
     super().__init__(url, place)
     self.physics_list = ["温度"]
-    self.device = 'ADT7410'
+    self.device = 'MAX31855'
 
   def getData(self):
     rowdata = get_max31855_data()
