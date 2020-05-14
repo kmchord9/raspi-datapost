@@ -50,7 +50,7 @@ class Sensor(metaclass = ABCMeta):
           obj[key]=self.RELATE[key][value]
     return objs
 
-  def post(self, objs=None, url='api/logs/'):
+  def post(self, objs=None, url='/api/logs/',idback=False):
     if objs==None:
       objs = self.postdata
     method = "POST"
@@ -71,6 +71,9 @@ class Sensor(metaclass = ABCMeta):
       with urllib.request.urlopen(request) as response:
           response_body = response.read().decode("utf-8")
           print(response_body)
+          if idback==True:
+            data = ast.literal_eval(response_body)
+            return data['id']
 
   def get_init_data(self):
     URL = self.url + '/api/users/'
@@ -87,7 +90,12 @@ class Sensor(metaclass = ABCMeta):
     data = ast.literal_eval(response_body)
     
     if self.place not in list(data['place'].keys()):
-      self.post([{"place":self.place}], '/api/place/')
+      id = self.post([{"place":self.place}], '/api/place/', idback=True)
+      data['place']['{}'.format(self.place)]=id
+
+
+      print(data)
+
  
     return data
 
@@ -115,12 +123,12 @@ class BME280(Sensor):
     return {key: value for (key, value) in zip(self.physics_list, rowdata.values())}
 
 
-#if __name__ == '__main__':
+if __name__ == '__main__':
   URL = "http://172.22.1.37:3001"
 
   sensors = [
-       #BME280(URL,"部屋005"),
-       ADT7410(URL,"部屋005"),
+       BME280(URL,"部屋005"),
+       ADT7410(URL,"部屋027"),
       ]
   while True:
     for sensor in sensors:
@@ -129,7 +137,7 @@ class BME280(Sensor):
       sensor.convertToKey(sensor.postdata)
       sensor.post()
 
-      sleep(10)
+    sleep(10)
 
 #URL = "http://172.22.1.37:3001"
 #sensor = BME280(URL,"部屋005")
