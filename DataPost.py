@@ -1,5 +1,6 @@
 from sensor_module.BME280 import *
 from sensor_module.ADT7410 import *
+from sensor_module.MAX31855 import *
 from key import *
 import base64
 import json
@@ -122,6 +123,18 @@ class BME280(Sensor):
     rowdata = BME280readData()
     return {key: value for (key, value) in zip(self.physics_list, rowdata.values())}
 
+class MAX31855(Sensor):
+  def __init__(self, url, place):
+    super().__init__(url, place)
+    self.physics_list = ["温度"]
+    self.device = 'ADT7410'
+
+  def getData(self):
+    rowdata = get_max31855_data()
+    key = self.physics_list[0]
+    value = rowdata
+
+    return {key: value}
 
 if __name__ == '__main__':
   URL = "http://172.22.1.37:3001"
@@ -129,6 +142,7 @@ if __name__ == '__main__':
   sensors = [
        BME280(URL,"部屋005"),
        ADT7410(URL,"部屋027"),
+       MAX31855(URL,"部屋026"),
       ]
   while True:
     for sensor in sensors:
