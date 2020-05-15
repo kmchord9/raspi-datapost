@@ -140,9 +140,9 @@ if __name__ == '__main__':
   URL = "http://172.22.1.37:3001"
 
   sensors = [
-       BME280(URL,"部屋005"),
-       ADT7410(URL,"部屋027"),
-       MAX31855(URL,"部屋026"),
+       #BME280(URL,"部屋028")
+       ADT7410(URL,"部屋027")
+       #MAX31855(URL,"部屋026"),
       ]
   while True:
     for sensor in sensors:
