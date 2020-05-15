@@ -140,7 +140,7 @@ if __name__ == '__main__':
   URL = "http://172.22.1.37:3001"
 
   sensors = [
-       #BME280(URL,"部屋028")
+       BME280(URL,"部屋028"),
        ADT7410(URL,"部屋027")
        #MAX31855(URL,"部屋026"),
       ]
@@ -151,7 +151,7 @@ if __name__ == '__main__':
       sensor.convertToKey(sensor.postdata)
       sensor.post()
 
-    sleep(10)
+    sleep(2)
 
 #URL = "http://172.22.1.37:3001"
 #sensor = BME280(URL,"部屋005")
